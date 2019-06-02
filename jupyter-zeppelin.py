@@ -5,8 +5,8 @@ import json
 import html
 import nbformat
 import codecs
-from aws.s3 import S3
-from StringIO import StringIO
+from smart_open import open
+from io import StringIO
 
 MD = re.compile(r'%md\s')
 SQL = re.compile(r'%sql\s')
@@ -15,17 +15,12 @@ HTML = re.compile(r'%html\s')
 
 def read_io(path):
     """Reads the contents of a local or S3 path into a StringIO.
+       Uses https://pypi.org/project/smart-open/ to more efficient 
+       streaming of very large files from S3 or local storage.
     """
     note = StringIO()
-    if path.startswith("s3://"):
-        s3 = S3(env='prod')
-        for line in s3.read(path):
-            note.write(line)
-            note.write("\n")
-    else:
-        with open(path) as local:
-            for line in local.readlines():
-                note.write(line)
+    for line in open(path, encoding='utf-8-sig'):
+        note.write(line)
 
     note.seek(0)
 
@@ -43,9 +38,9 @@ def table_cell_to_html(cell):
 def table_to_html(tsv):
     """Formats the tab-separated content of a Zeppelin TABLE as HTML.
     """
-    io = StringIO.StringIO(tsv)
+    io = StringIO(tsv)
     reader = csv.reader(io, delimiter="\t")
-    fields = reader.next()
+    fields = next(reader)
     column_headers = "".join([ "<th>" + name + "</th>" for name in fields ])
     lines = [
             "<table>",
@@ -172,9 +167,9 @@ if __name__ == '__main__':
 
     zeppelin_note_path = None
     target_path = None
-    if num_args == 2:
+    if num_args >= 2:
         zeppelin_note_path = sys.argv[1]
-    elif num_args == 3:
+    if num_args == 3:
         target_path = sys.argv[2]
 
     if not zeppelin_note_path:

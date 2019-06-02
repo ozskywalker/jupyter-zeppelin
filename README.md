@@ -2,16 +2,22 @@
 
 This repo has code for converting Zeppelin notebooks to Jupyter's ipynb format.
 
+To install the Python pre-requisites, run:
+
+```
+pip3 install -r requirements.txt
+```
+
 To convert a notebook, run:
 
 ```
-python jupyter-zeppelin.py note.json
+python3 jupyter-zeppelin.py note.json
 ```
 
 This will create a file named using the Zeppelin note's name in the current directory. Alternatively, you can pass an output path:
 
 ```
-python jupyter-zeppelin.py note.json Example.ipynb
+python3 jupyter-zeppelin.py note.json Example.ipynb
 ```
 
 ### Supported conventions
